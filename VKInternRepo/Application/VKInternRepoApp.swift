@@ -25,7 +25,7 @@ struct VKInternRepoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RepositoriesView()
         }
         .modelContainer(sharedModelContainer)
     }
