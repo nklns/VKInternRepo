@@ -12,6 +12,16 @@ struct RepositoriesView: View {
     
     var body: some View {
         Text("Hello world")
+        List {
+            ForEach (viewModel.repositories) { repository in
+                Text(repository.name/*.components(separatedBy: "-")[1]*/)
+                .frame(maxWidth: .infinity)
+                
+            }
+            .onDelete { indexes in
+                
+            }
+        }
     }
 }
 
