@@ -15,23 +15,10 @@ struct RepositoriesView: View {
         ScrollView {
             LazyVStack {
                 ForEach(viewModel.repositories) { repository in
-                    VStack(alignment: .leading) {
-                        Text(repository.name)
-                            .font(.headline)
-                            
-                        if repository.description != nil {
-                            Text(repository.description!)
-                                .font(.body)
+                    RepositoryRow(repository: repository)
+                        .onAppear {
+                            viewModel.loadMoreContent(currentItem: repository)
                         }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                    .onAppear {
-                        viewModel.loadMoreContent(currentItem: repository)
-                    }
-                    .padding(.horizontal)
                 }
                 
                 if viewModel.isLoading {
@@ -50,6 +37,38 @@ struct RepositoriesView: View {
         .alert("No repositories available.", isPresented: $showAlert) { }
     }
 }
+
+struct RepositoryRow: View {
+    let repository: RepositoryModel
+    
+    var body: some View {
+        HStack {
+            if let image = repository.image {
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+                    .padding(.trailing, 10)
+            }
+            VStack(alignment: .leading) {
+                Text(repository.name)
+                    .font(.headline)
+                
+                if let description = repository.description {
+                    Text(description)
+                        .font(.body)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8)
+        .padding(.horizontal)
+    }
+}
+
 
 #Preview {
     RepositoriesView()
