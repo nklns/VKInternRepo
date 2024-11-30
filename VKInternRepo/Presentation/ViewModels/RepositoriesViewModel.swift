@@ -10,9 +10,10 @@ import Foundation
 final class RepositoriesViewModel: ObservableObject {
     @Published var repositories: [Repository] = []
     @Published var isLoading = false
+    @Published var canLoadMorePages = true
     
+    private let apiKey = "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"
     private var currentPage = 1
-    private var canLoadMorePages = true
     
     private let networkService: NetworkService
     
@@ -28,7 +29,7 @@ final class RepositoriesViewModel: ObservableObject {
             return
         }
         
-        if let currentItem = currentItem, let last = repositories.last, last.id != currentItem.id {
+        if let currentItem = currentItem, let last = repositories.last, currentItem.id == last.id  {
             return
         }
         
@@ -37,23 +38,27 @@ final class RepositoriesViewModel: ObservableObject {
         Task {
             await fetchData(page: currentPage)
         }
-        
-        
     }
     
     func fetchData(page: Int) async {
         guard let url = URL(string: "https://api.github.com/search/repositories?q=swift&sort=stars&order=asc&page=\(page)") else { return }
+        var request = URLRequest(url: url)
+        request.setValue("token \(apiKey)", forHTTPHeaderField: "Authorization")
         
         do {
-            let response: GitHubResponse = try await networkService.fetchData(url: url)
+            let response: GitHubResponse = try await networkService.fetchData(urlRequest: request)
             DispatchQueue.main.async {
                 self.repositories.append(contentsOf: response.items)
                 self.currentPage += 1
                 self.isLoading = false
             }
         } catch {
-            print(error.localizedDescription)
-            self.isLoading = false
+            print("Error: \(error.localizedDescription)")
+            print("Current page: \(currentPage)")
+            DispatchQueue.main.async {
+                self.canLoadMorePages = false
+                self.isLoading = false
+            }
         }
     }
 }
