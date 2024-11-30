@@ -14,12 +14,21 @@ struct RepositoriesView: View {
         Text("Hello world")
         List {
             ForEach (viewModel.repositories) { repository in
-                Text(repository.name/*.components(separatedBy: "-")[1]*/)
+                Text(repository.name)
+                    .onAppear(perform: {
+                        viewModel.loadMoreContent(currentItem: repository)
+                    })
                 .frame(maxWidth: .infinity)
                 
             }
             .onDelete { indexes in
                 
+            }
+        }
+        .overlay {
+            if viewModel.isLoading {
+                ProgressView()
+                    .padding()
             }
         }
     }
