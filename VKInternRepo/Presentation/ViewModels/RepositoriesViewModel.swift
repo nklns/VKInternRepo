@@ -8,9 +8,9 @@
 import Foundation
 import SwiftUICore
 import UIKit
+import SwiftData
 
 final class RepositoriesViewModel: ObservableObject {
-    @Published var repositories: [RepositoryModel] = []
     @Published var isLoading = false
     @Published var canLoadMorePages = true
     
@@ -18,38 +18,40 @@ final class RepositoriesViewModel: ObservableObject {
     private var currentPage = 1
     
     private let networkService: NetworkService
+    var modelContext: ModelContext?
     
-    
-    init(networkService: NetworkService = NetworkService()) {
+    init(networkService: NetworkService = NetworkService(), modelContext: ModelContext? = nil) {
         self.networkService = networkService
-        
+        self.modelContext = modelContext
         loadMoreContent(currentItem: nil)
     }
     
-    func loadMoreContent(currentItem: RepositoryModel?) {
-        guard !isLoading, canLoadMorePages else {
-            return
-        }
-        
-        if let currentItem = currentItem, let last = repositories.last, currentItem.id == last.id  {
-            return
-        }
-        
+    func loadMoreContent(currentItem: RepositoryEntity?) {
+        guard !isLoading, canLoadMorePages else { return }
         isLoading = true
-        
         Task {
             await fetchData(page: currentPage)
         }
     }
     
-    func downloadImage(from url: URL?) async -> Image? {
+    @MainActor
+    func saveToDatabase(repositories: [RepositoryEntity]) async {
+        guard let context = modelContext else { return }
+        for repository in repositories {
+            context.insert(repository)
+        }
+        do {
+            try context.save()
+        } catch {
+            print("Error saving to database: \(error.localizedDescription)")
+        }
+    }
+
+    
+    func downloadImage(from url: URL?) async -> Data? {
         guard let url = url else { return nil }
         guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
-        if let uiImage = UIImage(data: data) {
-            return Image(uiImage: uiImage)
-        } else {
-            return nil
-        }
+        return data
     }
     
     func fetchData(page: Int) async {
@@ -59,15 +61,15 @@ final class RepositoriesViewModel: ObservableObject {
         
         do {
             let response: GitHubResponse = try await networkService.fetchData(urlRequest: request)
-            let responseConverted = try await withThrowingTaskGroup(of: RepositoryModel?.self) { group in
+            let responseConverted = try await withThrowingTaskGroup(of: RepositoryEntity?.self) { group in
                 for item in response.items {
                     group.addTask {
-                        let image = await self.downloadImage(from: URL(string: item.owner.avatarUrl))
-                        return RepositoryModel(id: item.id, name: item.name, description: item.description, image: image)
+                        let imageData = await self.downloadImage(from: URL(string: item.owner.avatarUrl))
+                        return RepositoryEntity(id: Int64(item.id), name: item.name, itemDescription: item.description, imageData: imageData)
                     }
                 }
                 
-                var results = [RepositoryModel]()
+                var results = [RepositoryEntity]()
                 for try await result in group {
                     if let result = result {
                         results.append(result)
@@ -76,8 +78,8 @@ final class RepositoriesViewModel: ObservableObject {
                 return results
             }
             
+            await saveToDatabase(repositories: responseConverted)
             DispatchQueue.main.async {
-                self.repositories.append(contentsOf: responseConverted)
                 self.currentPage += 1
                 self.isLoading = false
             }

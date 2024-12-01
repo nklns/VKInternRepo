@@ -6,25 +6,33 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RepositoriesView: View {
+    @Environment(\.modelContext) private var context
     @StateObject private var viewModel = RepositoriesViewModel()
     @State private var showAlert = false
     
+    @Query private var items: [RepositoryEntity]
     var body: some View {
         ScrollView {
             LazyVStack {
-                ForEach(viewModel.repositories) { repository in
-                    RepositoryRow(repository: repository)
-                        .onAppear {
-                            viewModel.loadMoreContent(currentItem: repository)
-                        }
+                ForEach(items) { item in
+                    RepositoryRow(repository: item) {
+                        deleteRepository(item)
+                    }
+                    .onAppear {
+                        viewModel.loadMoreContent(currentItem: item)
+                    }
                 }
                 
                 if viewModel.isLoading {
                     ProgressView()
                         .padding()
                 }
+            }
+            .onAppear {
+                viewModel.modelContext = context
             }
             .padding(.top)
         }
@@ -36,14 +44,24 @@ struct RepositoriesView: View {
         }
         .alert("No repositories available.", isPresented: $showAlert) { }
     }
+    
+    func deleteRepository(_ repository: RepositoryEntity) {
+        context.delete(repository)
+        do {
+            try context.save()
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
 }
 
 struct RepositoryRow: View {
-    let repository: RepositoryModel
+    let repository: RepositoryEntity
+    let deleteAction: () -> Void
     
     var body: some View {
         HStack {
-            if let image = repository.image {
+            if let image = convertDataToImage(repository.imageData) {
                 image
                     .resizable()
                     .scaledToFit()
@@ -55,17 +73,38 @@ struct RepositoryRow: View {
                 Text(repository.name)
                     .font(.headline)
                 
-                if let description = repository.description {
+                if let description = repository.itemDescription {
                     Text(description)
                         .font(.body)
                 }
             }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.gray.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 15))
+            Spacer()
+            Button {
+                deleteAction()
+            } label: {
+                Image(systemName: "trash.circle.fill")
+                    .font(.title)
+                    .foregroundStyle(.red)
+                    
+            }
+            .padding(.leading, 5)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color.gray.opacity(0.1))
-        .cornerRadius(8)
+        .cornerRadius(15)
         .padding(.horizontal)
+    }
+    
+    func convertDataToImage(_ data: Data?) -> Image? {
+        guard let data = data, let uiImage = UIImage(data: data) else {
+            return nil
+        }
+        return Image(uiImage: uiImage)
     }
 }
 

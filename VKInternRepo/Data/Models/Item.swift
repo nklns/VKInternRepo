@@ -7,12 +7,20 @@
 
 import Foundation
 import SwiftData
+import SwiftUICore
 
 @Model
-final class Item {
-    var timestamp: Date
+final class RepositoryEntity {
+    @Attribute(.unique)
+    var id: Int64
+    var name: String
+    var itemDescription: String?
+    var imageData: Data?
     
-    init(timestamp: Date) {
-        self.timestamp = timestamp
+    init(id: Int64, name: String, itemDescription: String? = nil, imageData: Data? = nil) {
+        self.id = id
+        self.name = name
+        self.itemDescription = itemDescription
+        self.imageData = imageData
     }
 }
