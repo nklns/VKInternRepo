@@ -7,18 +7,22 @@
 
 import XCTest
 import SwiftData
+import Combine
 @testable import VKInternRepo
 
 final class RepositoriesInteractorTests: XCTestCase {
     var interactor: RepositoriesInteractor!
     var modelContainer: ModelContainer!
-    
+    var schema: Schema!
+    var configuration: ModelConfiguration!
+    var cancellables = Set<AnyCancellable>()
+
     @MainActor
     override func setUp() {
         super.setUp()
 
-        let schema = Schema([RepositoryEntity.self])
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        schema = Schema([RepositoryEntity.self])
+        configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
 
         do {
             modelContainer = try ModelContainer(for: schema, configurations: [configuration])
@@ -31,6 +35,7 @@ final class RepositoriesInteractorTests: XCTestCase {
     override func tearDown() {
         interactor = nil
         modelContainer = nil
+        cancellables.removeAll()
         super.tearDown()
     }
 
@@ -47,31 +52,23 @@ final class RepositoriesInteractorTests: XCTestCase {
     }
 
     func testFetchDataWithError() async {
+        let expectation = XCTestExpectation(description: "Waiting for canLoadMorePages to be false")
+
+        interactor.$canLoadMorePages
+            .filter { !$0 }
+            .first()
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+
         interactor.networkService = MockNetworkService(shouldReturnError: true)
 
         await interactor.fetchData(page: 1)
+
+        await fulfillment(of: [expectation], timeout: 5.0)
 
         XCTAssertFalse(interactor.canLoadMorePages)
         XCTAssertFalse(interactor.isLoading)
     }
 }
-
-class MockNetworkService: NetworkServiceProtocol {
-    var shouldReturnError: Bool
-
-    init(shouldReturnError: Bool = false) {
-        self.shouldReturnError = shouldReturnError
-    }
-
-    func fetchData<T>(urlRequest: URLRequest) async throws -> T where T : Decodable {
-        if shouldReturnError {
-            throw NSError(domain: "TestError", code: 1, userInfo: nil)
-        }
-
-        let repository = Repository(id: 1, name: "TestRepo", description: "Description", owner: Owner(avatarUrl: ""))
-        let response = GitHubResponse(items: [repository])
-
-        return response as! T
-    }
-}
-

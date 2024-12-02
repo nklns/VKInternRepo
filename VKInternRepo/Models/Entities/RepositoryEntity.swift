@@ -12,12 +12,12 @@ import SwiftUICore
 @Model
 final class RepositoryEntity {
     @Attribute(.unique)
-    var id: Int64
+    var id: Int
     var name: String
     var itemDescription: String?
     var imageData: Data?
     
-    init(id: Int64, name: String, itemDescription: String? = nil, imageData: Data? = nil) {
+    init(id: Int, name: String, itemDescription: String? = nil, imageData: Data? = nil) {
         self.id = id
         self.name = name
         self.itemDescription = itemDescription
