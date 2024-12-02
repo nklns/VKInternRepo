@@ -29,20 +29,47 @@
 		85CFBDDE2CFA009F00E9E1F2 /* VKInternRepoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VKInternRepoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		85EEA9442CFD8EA6004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				VKInternRepoTests/NetworkServiceTests.swift,
+				VKInternRepoTests/RepositoriesInteractorTests.swift,
+				VKInternRepoUITests/RepositoriesViewUITests.swift,
+			);
+			target = 85CFBDC12CFA009E00E9E1F2 /* VKInternRepo */;
+		};
+		85EEA9452CFD8EA6004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepoTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				VKInternRepoTests/NetworkServiceTests.swift,
+				VKInternRepoTests/RepositoriesInteractorTests.swift,
+			);
+			target = 85CFBDD32CFA009F00E9E1F2 /* VKInternRepoTests */;
+		};
+		85EEA9522CFD951D004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepoUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				VKInternRepoUITests/RepositoriesViewUITests.swift,
+			);
+			target = 85CFBDDD2CFA009F00E9E1F2 /* VKInternRepoUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		85CFBDD72CFA009F00E9E1F2 /* VKInternRepoTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = VKInternRepoTests;
-			sourceTree = "<group>";
-		};
-		85CFBDE12CFA009F00E9E1F2 /* VKInternRepoUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = VKInternRepoUITests;
-			sourceTree = "<group>";
-		};
 		85D14F6F2CFA0457005C8690 /* VKInternRepo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = VKInternRepo;
+			sourceTree = "<group>";
+		};
+		85EEA93B2CFD8EA6004DB4F4 /* Tests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				85EEA9442CFD8EA6004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepo" target */,
+				85EEA9452CFD8EA6004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepoTests" target */,
+				85EEA9522CFD951D004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepoUITests" target */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -76,8 +103,7 @@
 			isa = PBXGroup;
 			children = (
 				85D14F6F2CFA0457005C8690 /* VKInternRepo */,
-				85CFBDD72CFA009F00E9E1F2 /* VKInternRepoTests */,
-				85CFBDE12CFA009F00E9E1F2 /* VKInternRepoUITests */,
+				85EEA93B2CFD8EA6004DB4F4 /* Tests */,
 				85CFBDC32CFA009E00E9E1F2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -109,6 +135,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				85D14F6F2CFA0457005C8690 /* VKInternRepo */,
+				85EEA93B2CFD8EA6004DB4F4 /* Tests */,
 			);
 			name = VKInternRepo;
 			packageProductDependencies = (
@@ -130,9 +157,6 @@
 			dependencies = (
 				85CFBDD62CFA009F00E9E1F2 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				85CFBDD72CFA009F00E9E1F2 /* VKInternRepoTests */,
-			);
 			name = VKInternRepoTests;
 			packageProductDependencies = (
 			);
@@ -152,9 +176,6 @@
 			);
 			dependencies = (
 				85CFBDE02CFA009F00E9E1F2 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				85CFBDE12CFA009F00E9E1F2 /* VKInternRepoUITests */,
 			);
 			name = VKInternRepoUITests;
 			packageProductDependencies = (
@@ -182,6 +203,7 @@
 					};
 					85CFBDDD2CFA009F00E9E1F2 = {
 						CreatedOnToolsVersion = 16.1;
+						LastSwiftMigration = 1610;
 						TestTargetID = 85CFBDC12CFA009E00E9E1F2;
 					};
 				};
@@ -487,6 +509,7 @@
 		85CFBDEF2CFA009F00E9E1F2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 269RMW5AR4;
@@ -495,6 +518,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.nklns.VKInternRepoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = VKInternRepo;
@@ -504,6 +528,7 @@
 		85CFBDF02CFA009F00E9E1F2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 269RMW5AR4;

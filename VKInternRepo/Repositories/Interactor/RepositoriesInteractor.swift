@@ -14,13 +14,13 @@ final class RepositoriesInteractor: ObservableObject {
     @Published var isLoading = false
     @Published var canLoadMorePages = true
 
-    private let apiKey = "YOUR_API_KEY"
-    private var currentPage = 1
+    private let apiKey = Constants.apiKey
+    var currentPage = 1
 
-    private let networkService: NetworkService
+    var networkService: NetworkServiceProtocol
     var modelContext: ModelContext?
 
-    init(networkService: NetworkService = NetworkService(), modelContext: ModelContext? = nil) {
+    public init(networkService: NetworkServiceProtocol = NetworkService(), modelContext: ModelContext? = nil) {
         self.networkService = networkService
         self.modelContext = modelContext
         loadMoreContent(currentItem: nil)
