@@ -8,7 +8,6 @@
 import Foundation
 
 class NetworkService {
-    
     func fetchData<T: Decodable>(
         urlRequest: URLRequest
     ) async throws -> T {
