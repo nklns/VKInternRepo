@@ -13,7 +13,7 @@ protocol NetworkServiceProtocol {
     ) async throws -> T
 }
 
-class NetworkService: NetworkServiceProtocol {
+final class NetworkService: NetworkServiceProtocol {
     func fetchData<T: Decodable>(
         urlRequest: URLRequest
     ) async throws -> T {

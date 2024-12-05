@@ -33,6 +33,7 @@
 		85EEA9442CFD8EA6004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepo" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Mocks/MockNetworkService.swift,
 				VKInternRepoTests/NetworkServiceTests.swift,
 				VKInternRepoTests/RepositoriesInteractorTests.swift,
 				VKInternRepoUITests/RepositoriesViewUITests.swift,
@@ -42,6 +43,7 @@
 		85EEA9452CFD8EA6004DB4F4 /* Exceptions for "Tests" folder in "VKInternRepoTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Mocks/MockNetworkService.swift,
 				VKInternRepoTests/NetworkServiceTests.swift,
 				VKInternRepoTests/RepositoriesInteractorTests.swift,
 			);

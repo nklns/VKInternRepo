@@ -16,42 +16,46 @@ struct RepositoriesView: View {
     @Query private var items: [RepositoryEntity]
 
     var body: some View {
-        ScrollView {
-            LazyVStack {
-                ForEach(items) { item in
-                    RepositoryRow(repository: item) {
-                        deleteRepository(item)
-                    }
+        NavigationStack {
+            ScrollView {
+                content
                     .onAppear {
-                        interactor.loadMoreContent(currentItem: item)
+                        interactor.modelContext = context
                     }
+                    .padding(.top)
+            }
+            .navigationTitle("Repositories")
+            .scrollIndicators(.hidden)
+            .onChange(of: interactor.canLoadMorePages) { (_, newValue) in
+                if !newValue, !interactor.isLoading {
+                    showAlert = true
                 }
+            }
+            .alert("No repositories available.", isPresented: $showAlert) { }
+        }
+    }
+}
 
-                if interactor.isLoading {
-                    ProgressView()
-                        .padding()
-                }
+private extension RepositoriesView {
+    var content: some View {
+        LazyVStack {
+            repositoryList
+            
+            if interactor.isLoading {
+                ProgressView()
+                    .padding()
+            }
+        }
+    }
+    
+    var repositoryList: some View {
+        ForEach(items) { item in
+            RepositoryRow(repository: item, interactor: interactor) {
+                interactor.deleteRepository(item)
             }
             .onAppear {
-                interactor.modelContext = context
+                interactor.loadMoreContent(currentItem: item)
             }
-            .padding(.top)
-        }
-        .scrollIndicators(.hidden)
-        .onChange(of: interactor.canLoadMorePages) { (_, newValue) in
-            if !newValue, !interactor.isLoading {
-                showAlert = true
-            }
-        }
-        .alert("No repositories available.", isPresented: $showAlert) { }
-    }
-
-    func deleteRepository(_ repository: RepositoryEntity) {
-        context.delete(repository)
-        do {
-            try context.save()
-        } catch {
-            print(error.localizedDescription)
         }
     }
 }

@@ -14,13 +14,12 @@ final class RepositoriesInteractor: ObservableObject {
     @Published var isLoading = false
     @Published var canLoadMorePages = true
 
-    private let apiKey = Constants.apiKey
     var currentPage = 1
 
     var networkService: NetworkServiceProtocol
     var modelContext: ModelContext?
 
-    public init(networkService: NetworkServiceProtocol = NetworkService(), modelContext: ModelContext? = nil) {
+    init(networkService: NetworkServiceProtocol = NetworkService(), modelContext: ModelContext? = nil) {
         self.networkService = networkService
         self.modelContext = modelContext
         loadMoreContent(currentItem: nil)
@@ -33,30 +32,28 @@ final class RepositoriesInteractor: ObservableObject {
             await fetchData(page: currentPage)
         }
     }
-
-    @MainActor
-    func saveToDatabase(repositories: [RepositoryEntity]) async {
-        guard let context = modelContext else { return }
-        for repository in repositories {
-            context.insert(repository)
-        }
+    
+    func deleteRepository(_ repository: RepositoryEntity) {
+        guard let modelContext = modelContext else { return }
+        modelContext.delete(repository)
         do {
-            try context.save()
+            try modelContext.save()
         } catch {
-            print("Error saving to database: \(error.localizedDescription)")
+            print(error.localizedDescription)
         }
     }
 
-    func downloadImage(from url: URL?) async -> Data? {
-        guard let url = url else { return nil }
-        guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
-        return data
+    func convertDataToImage(_ data: Data?) -> Image? {
+        guard let data = data, let uiImage = UIImage(data: data) else {
+            return nil
+        }
+        return Image(uiImage: uiImage)
     }
-
+    
     func fetchData(page: Int) async {
         guard let url = URL(string: "https://api.github.com/search/repositories?q=swift&sort=stars&order=asc&page=\(page)") else { return }
         var request = URLRequest(url: url)
-        request.setValue("token \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("token \(Constants.apiKey)", forHTTPHeaderField: "Authorization")
 
         do {
             let response: GitHubResponse = try await networkService.fetchData(urlRequest: request)
@@ -64,7 +61,7 @@ final class RepositoriesInteractor: ObservableObject {
                 for item in response.items {
                     group.addTask {
                         let imageData = await self.downloadImage(from: URL(string: item.owner.avatarUrl))
-                        return RepositoryEntity(id: Int64(item.id), name: item.name, itemDescription: item.description, imageData: imageData)
+                        return RepositoryEntity(id: item.id, name: item.name, itemDescription: item.description, imageData: imageData)
                     }
                 }
 
@@ -89,6 +86,27 @@ final class RepositoriesInteractor: ObservableObject {
                 self.canLoadMorePages = false
                 self.isLoading = false
             }
+        }
+    }
+}
+
+private extension RepositoriesInteractor {
+    func downloadImage(from url: URL?) async -> Data? {
+        guard let url = url else { return nil }
+        guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
+        return data
+    }
+    
+    @MainActor
+    func saveToDatabase(repositories: [RepositoryEntity]) async {
+        guard let context = modelContext else { return }
+        for repository in repositories {
+            context.insert(repository)
+        }
+        do {
+            try context.save()
+        } catch {
+            print("Error saving to database: \(error.localizedDescription)")
         }
     }
 }

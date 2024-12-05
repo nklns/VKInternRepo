@@ -10,7 +10,7 @@ import SwiftData
 
 @main
 struct VKInternRepoApp: App {
-    var sharedModelContainer: ModelContainer = {
+    private var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             RepositoryEntity.self,
         ])
